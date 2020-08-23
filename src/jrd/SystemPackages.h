@@ -29,6 +29,7 @@
 #include "../common/classes/array.h"
 #include "../common/classes/objects_array.h"
 #include "../jrd/constants.h"
+#include "../jrd/ini.h"
 #include "firebird/Interface.h"
 #include <initializer_list>
 #include <functional>
@@ -160,6 +161,24 @@ namespace Jrd
 		Firebird::ObjectsArray<SystemFunction> functions;
 
 		static Firebird::ObjectsArray<SystemPackage>& get();
+
+	private:
+		SystemPackage(const SystemPackage&) = delete;
+		SystemPackage& operator=(SystemPackage const&) = default;
+	};
+
+	template <typename T>
+	struct SystemRoutineFactory
+	{
+		T* operator()(
+			Firebird::ThrowStatusExceptionWrapper* status,
+			Firebird::IExternalContext* /*context*/,
+			Firebird::IRoutineMetadata* /*metadata*/,
+			Firebird::IMetadataBuilder* inBuilder,
+			Firebird::IMetadataBuilder* outBuilder)
+		{
+			return FB_NEW T(status, inBuilder, outBuilder);
+		}
 	};
 }	// namespace Jrd
 

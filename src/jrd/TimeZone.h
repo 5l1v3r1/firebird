@@ -27,6 +27,7 @@
 #include "firebird/Message.h"
 #include "../common/classes/fb_string.h"
 #include "../jrd/Monitoring.h"
+#include "../jrd/SystemPackages.h"
 #include "../jrd/recsrc/RecordSource.h"
 
 namespace Jrd {
@@ -152,6 +153,12 @@ public:
 
 	void execute(Firebird::ThrowStatusExceptionWrapper* status,
 		Firebird::IExternalContext* context, void* inMsg, void* outMsg) override;
+};
+
+class TimeZonePackage : public SystemPackage
+{
+public:
+	TimeZonePackage(Firebird::MemoryPool& pool);
 };
 
 

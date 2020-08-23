@@ -22,8 +22,7 @@
 
 #include "firebird.h"
 #include "../jrd/SystemPackages.h"
-#include "../jrd/ods.h"
-#include "../jrd/ini.h"
+#include "../jrd/BlobUtil.h"
 #include "../jrd/TimeZone.h"
 
 using namespace Firebird;
@@ -35,58 +34,10 @@ namespace
 	struct SystemPackageInit
 	{
 		explicit SystemPackageInit(MemoryPool& pool)
-			: list(FB_NEW_POOL(pool) ObjectsArray<SystemPackage>(pool, {
-				SystemPackage(
-					pool,
-					"RDB$TIME_ZONE_UTIL",
-					ODS_13_0,
-					// procedures
-					{
-						SystemProcedure(
-							pool,
-							"TRANSITIONS",
-							[]
-							(ThrowStatusExceptionWrapper* status, IExternalContext* /*context*/,
-								IRoutineMetadata* /*metadata*/, IMetadataBuilder* inBuilder, IMetadataBuilder* outBuilder)
-							{
-								return FB_NEW TimeZoneTransitionsProcedure(status, inBuilder, outBuilder);
-							},
-							prc_selectable,
-							// input parameters
-							{
-								{"RDB$TIME_ZONE_NAME", fld_tz_name, false},
-								{"RDB$FROM_TIMESTAMP", fld_timestamp_tz, false},
-								{"RDB$TO_TIMESTAMP", fld_timestamp_tz, false}
-							},
-							// output parameters
-							{
-								{"RDB$START_TIMESTAMP", fld_timestamp_tz, false},
-								{"RDB$END_TIMESTAMP", fld_timestamp_tz, false},
-								{"RDB$ZONE_OFFSET", fld_tz_offset, false},
-								{"RDB$DST_OFFSET", fld_tz_offset, false},
-								{"RDB$EFFECTIVE_OFFSET", fld_tz_offset, false}
-							}
-						)
-					},
-					// functions
-					{
-						SystemFunction(
-							pool,
-							"DATABASE_VERSION",
-							[]
-							(ThrowStatusExceptionWrapper* status, IExternalContext* /*context*/,
-								IRoutineMetadata* /*metadata*/, IMetadataBuilder* inBuilder, IMetadataBuilder* outBuilder)
-							{
-								return FB_NEW TimeZoneDatabaseVersionFunction(status, inBuilder, outBuilder);
-							},
-							// parameters
-							{},
-							{ fld_tz_db_version, false }
-						)
-					}
-				)
-			}))
+			: list(FB_NEW_POOL(pool) ObjectsArray<SystemPackage>(pool))
 		{
+			list->add(TimeZonePackage(pool));
+			list->add(BlobUtilPackage(pool));
 		}
 
 		static InitInstance<SystemPackageInit> INSTANCE;

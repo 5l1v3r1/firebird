@@ -123,3 +123,50 @@ void TimeZoneDatabaseVersionFunction::execute(ThrowStatusExceptionWrapper* statu
 	out->versionNull = FB_FALSE;
 	out->version.set(str.c_str());
 }
+
+
+//--------------------------------------
+
+
+TimeZonePackage::TimeZonePackage(Firebird::MemoryPool& pool)
+	: SystemPackage(
+		pool,
+		"RDB$TIME_ZONE_UTIL",
+		ODS_13_0,
+		// procedures
+		{
+			SystemProcedure(
+				pool,
+				"TRANSITIONS",
+				SystemRoutineFactory<TimeZoneTransitionsProcedure>(),
+				prc_selectable,
+				// input parameters
+				{
+					{"RDB$TIME_ZONE_NAME", fld_tz_name, false},
+					{"RDB$FROM_TIMESTAMP", fld_timestamp_tz, false},
+					{"RDB$TO_TIMESTAMP", fld_timestamp_tz, false}
+				},
+				// output parameters
+				{
+					{"RDB$START_TIMESTAMP", fld_timestamp_tz, false},
+					{"RDB$END_TIMESTAMP", fld_timestamp_tz, false},
+					{"RDB$ZONE_OFFSET", fld_tz_offset, false},
+					{"RDB$DST_OFFSET", fld_tz_offset, false},
+					{"RDB$EFFECTIVE_OFFSET", fld_tz_offset, false}
+				}
+			)
+		},
+		// functions
+		{
+			SystemFunction(
+				pool,
+				"DATABASE_VERSION",
+				SystemRoutineFactory<TimeZoneDatabaseVersionFunction>(),
+				// parameters
+				{},
+				{fld_tz_db_version, false}
+			)
+		}
+	)
+{
+}
